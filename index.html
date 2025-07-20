@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Food Recipe Organizer | Bocaletto Luca</title>
+  <meta name="description" content="Archive your recipes with ingredients, instructions & photos. Filter by category. Import or export your collection as JSON.">
+  <meta name="keywords" content="recipes, organizer, ingredients, instructions, photos, filter, JSON">
+  <meta name="author" content="Bocaletto Luca">
+  <link rel="canonical" href="https://github.com/bocaletto-luca/FoodRecipeOrganizer">
+  <meta property="og:title" content="Food Recipe Organizer">
+  <meta property="og:description" content="Archive your recipes with ingredients, instructions & photos. Filter by category.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://github.com/bocaletto-luca/FoodRecipeOrganizer">
+  <meta property="og:image" content="https://picsum.photos/600/400?random=2">
+  <link href="https://fonts.googleapis.com/css?family=Inter:400,500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafafa;
+      --card: #ffffff;
+      --primary: #2563eb;
+      --primary-dark: #1e40af;
+      --accent: #10b981;
+      --text: #1f2937;
+      --border: #e0e0e0;
+      --radius: 8px;
+      --gap: 1rem;
+      --max-width: 900px;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0; padding: 0;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex; flex-direction: column;
+      align-items: center;
+      padding: var(--gap);
+    }
+    header {
+      width: 100%; max-width: var(--max-width);
+      text-align: center;
+      margin-bottom: var(--gap);
+    }
+    header h1 {
+      font-size: 2rem; font-weight: 500;
+    }
+    main {
+      width: 100%; max-width: var(--max-width);
+      display: flex; flex-direction: column;
+      gap: var(--gap);
+    }
+    /* filter bar */
+    #filter-bar {
+      display: flex; flex-wrap: wrap;
+      gap: var(--gap); align-items: center;
+    }
+    #filter-bar label {
+      font-weight: 500;
+    }
+    #category-filter {
+      padding: .5rem; font: inherit;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    /* form */
+    #recipe-form {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--gap);
+      display: grid;
+      gap: var(--gap);
+    }
+    #recipe-form h2 {
+      margin-bottom: .5rem; font-size: 1.25rem;
+    }
+    #recipe-form input[type="text"],
+    #recipe-form textarea,
+    #recipe-form select {
+      width: 100%;
+      padding: .5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font: inherit;
+    }
+    #recipe-form textarea { resize: vertical; min-height: 80px; }
+    #recipe-form input[type="file"] {
+      font: inherit;
+    }
+    #form-actions {
+      display: flex; gap: var(--gap);
+      justify-content: flex-end;
+    }
+    #form-actions button {
+      padding: .5rem 1rem;
+      font: inherit;
+      border: none; border-radius: var(--radius);
+      cursor: pointer;
+      transition: background .2s;
+    }
+    #save-btn { background: var(--primary); color: #fff; }
+    #save-btn:hover { background: var(--primary-dark); }
+    #reset-btn { background: var(--accent); color: #fff; }
+    #reset-btn:hover { background: #0e7f60; }
+    /* recipe grid */
+    #recipes {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px,1fr));
+      gap: var(--gap);
+    }
+    .recipe-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      transition: box-shadow .2s;
+    }
+    .recipe-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .recipe-card img {
+      width: 100%; height: 140px; object-fit: cover;
+    }
+    .recipe-card .info {
+      padding: var(--gap); flex:1; display: flex;
+      flex-direction: column; gap: .5rem;
+    }
+    .info h3 {
+      font-size: 1.1rem; margin-bottom: .25rem;
+    }
+    .info .category {
+      font-size: .85rem; color: var(--accent);
+    }
+    .info p {
+      font-size: .9rem; flex:1;
+      overflow: auto; margin-bottom: .5rem;
+    }
+    .recipe-card .actions {
+      display: flex; gap: .5rem;
+      padding: 0 var(--gap) var(--gap);
+    }
+    .actions button {
+      flex:1; padding:.5rem;
+      font: inherit; border:none; border-radius: var(--radius);
+      cursor: pointer; transition: background .2s;
+    }
+    .edit-btn { background: var(--primary); color:#fff; }
+    .edit-btn:hover { background: var(--primary-dark); }
+    .del-btn { background: #e53e3e; color:#fff; }
+    .del-btn:hover { background: #9b2c2c; }
+    /* import/export */
+    #io-controls {
+      display: flex; gap: var(--gap);
+      justify-content: flex-end;
+    }
+    #io-controls button {
+      padding: .5rem 1rem; font: inherit;
+      border: none; border-radius: var(--radius);
+      background: var(--accent); color:#fff;
+      cursor: pointer; transition: background .2s;
+    }
+    #io-controls button:hover { background: #0e7f60; }
+    #file-input { display: none; }
+    /* footer */
+    footer {
+      width: 100%; max-width: var(--max-width);
+      text-align: center; margin: var(--gap) auto 0;
+      font-size: .85rem; color: #666;
+    }
+    footer a { color: var(--primary); text-decoration: none; }
+    @media(max-width:600px) {
+      #form-actions { flex-direction: column; }
+      #io-controls { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Food Recipe Organizer</h1>
+  </header>
+
+  <main>
+    <!-- Filter -->
+    <div id="filter-bar">
+      <label for="category-filter">Filter by category:</label>
+      <select id="category-filter">
+        <option value="All">All</option>
+        <option>Antipasti</option>
+        <option>Primi</option>
+        <option>Secondi</option>
+        <option>Dolci</option>
+        <option>Bevande</option>
+      </select>
+    </div>
+
+    <!-- Recipe Form -->
+    <form id="recipe-form">
+      <h2 id="form-title">Add New Recipe</h2>
+      <input type="hidden" id="recipe-id">
+      <label>
+        Recipe Name
+        <input type="text" id="recipe-name" required>
+      </label>
+      <label>
+        Category
+        <select id="recipe-category" required>
+          <option value="">Select category…</option>
+          <option>Antipasti</option>
+          <option>Primi</option>
+          <option>Secondi</option>
+          <option>Dolci</option>
+          <option>Bevande</option>
+        </select>
+      </label>
+      <label>
+        Ingredients (one per line)
+        <textarea id="recipe-ingredients" placeholder="e.g. 2 eggs…"></textarea>
+      </label>
+      <label>
+        Instructions
+        <textarea id="recipe-instructions" placeholder="Step-by-step instructions…"></textarea>
+      </label>
+      <label>
+        Photo
+        <input type="file" id="recipe-photo" accept="image/*">
+      </label>
+      <div id="photo-preview"></div>
+      <div id="form-actions">
+        <button type="reset" id="reset-btn">Clear</button>
+        <button type="submit" id="save-btn">Save Recipe</button>
+      </div>
+    </form>
+
+    <!-- Import/Export -->
+    <div id="io-controls">
+      <button id="export-btn">Export JSON</button>
+      <button id="import-btn">Import JSON</button>
+      <input type="file" id="file-input" accept=".json">
+    </div>
+
+    <!-- Recipes Grid -->
+    <section id="recipes"></section>
+  </main>
+
+  <footer>
+    © 2025 Bocaletto Luca — 
+    <a href="https://github.com/bocaletto-luca/FoodRecipeOrganizer" target="_blank">GitHub</a>
+  </footer>
+
+  <script>
+    // state & storage
+    let recipes = JSON.parse(localStorage.getItem('recipes') || '[]');
+    const form       = document.getElementById('recipe-form');
+    const idInput    = document.getElementById('recipe-id');
+    const nameInput  = document.getElementById('recipe-name');
+    const catInput   = document.getElementById('recipe-category');
+    const ingInput   = document.getElementById('recipe-ingredients');
+    const instrInput = document.getElementById('recipe-instructions');
+    const photoInput = document.getElementById('recipe-photo');
+    const preview    = document.getElementById('photo-preview');
+    const saveBtn    = document.getElementById('save-btn');
+    const resetBtn   = document.getElementById('reset-btn');
+    const filterSel  = document.getElementById('category-filter');
+    const recipesEl  = document.getElementById('recipes');
+    const exportBtn  = document.getElementById('export-btn');
+    const importBtn  = document.getElementById('import-btn');
+    const fileInput  = document.getElementById('file-input');
+    const formTitle  = document.getElementById('form-title');
+
+    // render all recipes
+    function renderRecipes() {
+      const category = filterSel.value;
+      recipesEl.innerHTML = '';
+      recipes
+        .filter(r => category === 'All' || r.category === category)
+        .forEach(recipe => {
+          const card = document.createElement('div');
+          card.className = 'recipe-card';
+          card.innerHTML = `
+            <img src="${recipe.photo || 'https://via.placeholder.com/300x140?text=No+Photo'}" alt="${recipe.name}">
+            <div class="info">
+              <h3>${recipe.name}</h3>
+              <div class="category">${recipe.category}</div>
+              <p>${recipe.ingredients.split('\n').map(line => `• ${line}`).join('<br>')}</p>
+            </div>
+            <div class="actions">
+              <button class="edit-btn">Edit</button>
+              <button class="del-btn">Delete</button>
+            </div>`;
+          // edit
+          card.querySelector('.edit-btn').onclick = () => loadRecipe(recipe.id);
+          // delete
+          card.querySelector('.del-btn').onclick = () => {
+            if (confirm('Delete this recipe?')) {
+              recipes = recipes.filter(r => r.id !== recipe.id);
+              saveAll(); renderRecipes();
+            }
+          };
+          recipesEl.append(card);
+        });
+    }
+
+    // save to localStorage
+    function saveAll() {
+      localStorage.setItem('recipes', JSON.stringify(recipes));
+    }
+
+    // load into form for edit
+    function loadRecipe(id) {
+      const r = recipes.find(x => x.id === id);
+      if (!r) return;
+      idInput.value    = r.id;
+      nameInput.value  = r.name;
+      catInput.value   = r.category;
+      ingInput.value   = r.ingredients;
+      instrInput.value = r.instructions;
+      preview.innerHTML = r.photo
+        ? `<img src="${r.photo}" alt="preview" style="max-width:100%;border-radius:var(--radius)">`
+        : '';
+      formTitle.textContent = 'Edit Recipe';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // form reset
+    resetBtn.onclick = () => {
+      idInput.value = '';
+      preview.innerHTML = '';
+      formTitle.textContent = 'Add New Recipe';
+    };
+
+    // handle photo preview
+    photoInput.onchange = () => {
+      const file = photoInput.files[0];
+      if (!file) { preview.innerHTML = ''; return; }
+      const reader = new FileReader();
+      reader.onload = e => {
+        preview.innerHTML = `<img src="${e.target.result}" alt="preview" style="max-width:100%;border-radius:var(--radius)">`;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    // submit form
+    form.onsubmit = e => {
+      e.preventDefault();
+      const id   = idInput.value || Date.now().toString();
+      const name = nameInput.value.trim();
+      const cat  = catInput.value;
+      const ing  = ingInput.value.trim();
+      const ins  = instrInput.value.trim();
+      // photo
+      if (photoInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = evt => saveRecipe(id, name, cat, ing, ins, evt.target.result);
+        reader.readAsDataURL(photoInput.files[0]);
+      } else {
+        const existing = recipes.find(r => r.id === id);
+        const photo    = existing ? existing.photo : '';
+        saveRecipe(id, name, cat, ing, ins, photo);
+      }
+    };
+
+    // add or update
+    function saveRecipe(id, name, cat, ing, ins, photo) {
+      const index = recipes.findIndex(r => r.id === id);
+      const obj   = { id, name, category: cat, ingredients: ing, instructions: ins, photo };
+      if (index >= 0) recipes[index] = obj;
+      else recipes.push(obj);
+      saveAll();
+      form.reset(); resetBtn.click();
+      renderRecipes();
+    }
+
+    // filter change
+    filterSel.onchange = renderRecipes;
+
+    // export JSON
+    exportBtn.onclick = () => {
+      const blob = new Blob([JSON.stringify(recipes, null, 2)], { type: 'application/json' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url; a.download = 'recipes.json'; a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    // import JSON
+    importBtn.onclick = () => fileInput.click();
+    fileInput.onchange = e => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (Array.isArray(data)) {
+            recipes = data;
+            saveAll();
+            renderRecipes();
+          } else throw 0;
+        } catch {
+          alert('Invalid JSON file.');
+        }
+      };
+      reader.readAsText(f);
+    };
+
+    // initial render
+    renderRecipes();
+  </script>
+</body>
+</html>
