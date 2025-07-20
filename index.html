@@ -4,30 +4,43 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Food Recipe Organizer | Bocaletto Luca</title>
-  <meta name="description" content="Archive your recipes with ingredients, instructions & photos. Filter by category. Import or export your collection as JSON.">
-  <meta name="keywords" content="recipes, organizer, ingredients, instructions, photos, filter, JSON">
+  <meta name="description" content="A modern, responsive recipe organizer. Store your recipes with ingredients, instructions & photos. Filter by category. Import/export JSON.">
+  <meta name="keywords" content="recipes, organizer, ingredients, instructions, photos, filter, JSON, responsive">
   <meta name="author" content="Bocaletto Luca">
   <link rel="canonical" href="https://github.com/bocaletto-luca/FoodRecipeOrganizer">
   <meta property="og:title" content="Food Recipe Organizer">
-  <meta property="og:description" content="Archive your recipes with ingredients, instructions & photos. Filter by category.">
+  <meta property="og:description" content="Organize your recipes with ingredients, instructions & photos. Filter by category. Import/export JSON.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://github.com/bocaletto-luca/FoodRecipeOrganizer">
   <meta property="og:image" content="https://picsum.photos/600/400?random=2">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Food Recipe Organizer",
+    "author": { "@type": "Person", "name": "Bocaletto Luca" },
+    "applicationCategory": "Utilities",
+    "operatingSystem": "Web",
+    "url": "https://github.com/bocaletto-luca/FoodRecipeOrganizer",
+    "description": "Store and organize recipes with photos, filter by category, import/export JSON."
+  }
+  </script>
   <link href="https://fonts.googleapis.com/css?family=Inter:400,500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #fafafa;
+      --bg: #f3f4f6;
       --card: #ffffff;
       --primary: #2563eb;
       --primary-dark: #1e40af;
       --accent: #10b981;
+      --accent-dark: #0e7f60;
       --text: #1f2937;
-      --border: #e0e0e0;
+      --border: #e5e7eb;
       --radius: 8px;
       --gap: 1rem;
       --max-width: 900px;
     }
-    *, *::before, *::after {
+    *,*::before,*::after {
       box-sizing: border-box;
       margin: 0; padding: 0;
     }
@@ -36,13 +49,12 @@
       background: var(--bg);
       color: var(--text);
       display: flex; flex-direction: column;
-      align-items: center;
-      padding: var(--gap);
+      align-items: center; line-height: 1.5;
+      min-height: 100vh; padding: var(--gap);
     }
     header {
       width: 100%; max-width: var(--max-width);
-      text-align: center;
-      margin-bottom: var(--gap);
+      text-align: center; margin-bottom: var(--gap);
     }
     header h1 {
       font-size: 2rem; font-weight: 500;
@@ -52,7 +64,7 @@
       display: flex; flex-direction: column;
       gap: var(--gap);
     }
-    /* filter bar */
+    /* Filter bar */
     #filter-bar {
       display: flex; flex-wrap: wrap;
       gap: var(--gap); align-items: center;
@@ -64,48 +76,74 @@
       padding: .5rem; font: inherit;
       border: 1px solid var(--border);
       border-radius: var(--radius);
+      background: #fff;
     }
-    /* form */
+    /* Recipe form */
     #recipe-form {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: var(--gap);
-      display: grid;
-      gap: var(--gap);
+      display: grid; gap: var(--gap);
     }
     #recipe-form h2 {
-      margin-bottom: .5rem; font-size: 1.25rem;
+      font-size: 1.25rem; margin-bottom: .5rem;
     }
     #recipe-form input[type="text"],
     #recipe-form textarea,
     #recipe-form select {
-      width: 100%;
-      padding: .5rem;
+      width: 100%; padding: .5rem;
       border: 1px solid var(--border);
       border-radius: var(--radius);
       font: inherit;
     }
-    #recipe-form textarea { resize: vertical; min-height: 80px; }
+    #recipe-form textarea {
+      resize: vertical; min-height: 80px;
+    }
     #recipe-form input[type="file"] {
       font: inherit;
     }
+    #photo-preview img {
+      max-width: 100%; border-radius: var(--radius);
+      margin-top: .5rem;
+    }
     #form-actions {
+      display: flex; gap: var(--gap);
+      justify-content: flex-end; flex-wrap: wrap;
+    }
+    #form-actions button {
+      padding: .5rem 1rem; font: inherit;
+      border: none; border-radius: var(--radius);
+      cursor: pointer; transition: background .2s;
+    }
+    #save-btn {
+      background: var(--primary); color: #fff;
+    }
+    #save-btn:hover {
+      background: var(--primary-dark);
+    }
+    #reset-btn {
+      background: var(--accent); color: #fff;
+    }
+    #reset-btn:hover {
+      background: var(--accent-dark);
+    }
+    /* Import/Export */
+    #io-controls {
       display: flex; gap: var(--gap);
       justify-content: flex-end;
     }
-    #form-actions button {
-      padding: .5rem 1rem;
-      font: inherit;
+    #io-controls button {
+      padding: .5rem 1rem; font: inherit;
       border: none; border-radius: var(--radius);
-      cursor: pointer;
-      transition: background .2s;
+      background: var(--accent); color: #fff;
+      cursor: pointer; transition: background .2s;
     }
-    #save-btn { background: var(--primary); color: #fff; }
-    #save-btn:hover { background: var(--primary-dark); }
-    #reset-btn { background: var(--accent); color: #fff; }
-    #reset-btn:hover { background: #0e7f60; }
-    /* recipe grid */
+    #io-controls button:hover {
+      background: var(--accent-dark);
+    }
+    #file-input { display: none; }
+    /* Recipe grid */
     #recipes {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(240px,1fr));
@@ -123,56 +161,56 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     .recipe-card img {
-      width: 100%; height: 140px; object-fit: cover;
+      width: 100%; height: 140px;
+      object-fit: cover;
     }
-    .recipe-card .info {
-      padding: var(--gap); flex:1; display: flex;
-      flex-direction: column; gap: .5rem;
+    .recipe-info {
+      padding: var(--gap); flex: 1;
+      display: flex; flex-direction: column;
+      gap: .5rem;
     }
-    .info h3 {
+    .recipe-info h3 {
       font-size: 1.1rem; margin-bottom: .25rem;
     }
-    .info .category {
+    .recipe-info .category {
       font-size: .85rem; color: var(--accent);
     }
-    .info p {
-      font-size: .9rem; flex:1;
-      overflow: auto; margin-bottom: .5rem;
+    .recipe-info .snippet {
+      font-size: .9rem; flex: 1;
+      overflow: auto;
     }
-    .recipe-card .actions {
+    .recipe-actions {
       display: flex; gap: .5rem;
       padding: 0 var(--gap) var(--gap);
     }
-    .actions button {
-      flex:1; padding:.5rem;
-      font: inherit; border:none; border-radius: var(--radius);
+    .recipe-actions button {
+      flex: 1; padding: .5rem;
+      font: inherit; border: none;
+      border-radius: var(--radius);
       cursor: pointer; transition: background .2s;
     }
-    .edit-btn { background: var(--primary); color:#fff; }
-    .edit-btn:hover { background: var(--primary-dark); }
-    .del-btn { background: #e53e3e; color:#fff; }
-    .del-btn:hover { background: #9b2c2c; }
-    /* import/export */
-    #io-controls {
-      display: flex; gap: var(--gap);
-      justify-content: flex-end;
+    .edit-btn {
+      background: var(--primary); color: #fff;
     }
-    #io-controls button {
-      padding: .5rem 1rem; font: inherit;
-      border: none; border-radius: var(--radius);
-      background: var(--accent); color:#fff;
-      cursor: pointer; transition: background .2s;
+    .edit-btn:hover {
+      background: var(--primary-dark);
     }
-    #io-controls button:hover { background: #0e7f60; }
-    #file-input { display: none; }
-    /* footer */
+    .delete-btn {
+      background: #e53e3e; color: #fff;
+    }
+    .delete-btn:hover {
+      background: #9b2c2c;
+    }
+    /* Footer */
     footer {
       width: 100%; max-width: var(--max-width);
       text-align: center; margin: var(--gap) auto 0;
       font-size: .85rem; color: #666;
     }
-    footer a { color: var(--primary); text-decoration: none; }
-    @media(max-width:600px) {
+    footer a {
+      color: var(--primary); text-decoration: none;
+    }
+    @media (max-width: 600px) {
       #form-actions { flex-direction: column; }
       #io-controls { justify-content: center; }
     }
@@ -185,16 +223,15 @@
   </header>
 
   <main>
-    <!-- Filter -->
+    <!-- Category Filter -->
     <div id="filter-bar">
       <label for="category-filter">Filter by category:</label>
       <select id="category-filter">
         <option value="All">All</option>
-        <option>Antipasti</option>
-        <option>Primi</option>
-        <option>Secondi</option>
-        <option>Dolci</option>
-        <option>Bevande</option>
+        <option>Appetizers</option>
+        <option>Main Courses</option>
+        <option>Desserts</option>
+        <option>Beverages</option>
       </select>
     </div>
 
@@ -204,22 +241,21 @@
       <input type="hidden" id="recipe-id">
       <label>
         Recipe Name
-        <input type="text" id="recipe-name" required>
+        <input type="text" id="recipe-name" placeholder="e.g. Chocolate Cake" required>
       </label>
       <label>
         Category
         <select id="recipe-category" required>
           <option value="">Select category…</option>
-          <option>Antipasti</option>
-          <option>Primi</option>
-          <option>Secondi</option>
-          <option>Dolci</option>
-          <option>Bevande</option>
+          <option>Appetizers</option>
+          <option>Main Courses</option>
+          <option>Desserts</option>
+          <option>Beverages</option>
         </select>
       </label>
       <label>
         Ingredients (one per line)
-        <textarea id="recipe-ingredients" placeholder="e.g. 2 eggs…"></textarea>
+        <textarea id="recipe-ingredients" placeholder="e.g. 2 cups flour"></textarea>
       </label>
       <label>
         Instructions
@@ -236,7 +272,7 @@
       </div>
     </form>
 
-    <!-- Import/Export -->
+    <!-- Import/Export JSON -->
     <div id="io-controls">
       <button id="export-btn">Export JSON</button>
       <button id="import-btn">Import JSON</button>
@@ -244,171 +280,164 @@
     </div>
 
     <!-- Recipes Grid -->
-    <section id="recipes"></section>
+    <section id="recipes" aria-label="Recipe list"></section>
   </main>
 
   <footer>
     © 2025 Bocaletto Luca — 
-    <a href="https://github.com/bocaletto-luca/FoodRecipeOrganizer" target="_blank">GitHub</a>
+    <a href="https://github.com/bocaletto-luca/FoodRecipeOrganizer" target="_blank" rel="noopener">GitHub</a>
   </footer>
 
   <script>
-    // state & storage
+    // State
     let recipes = JSON.parse(localStorage.getItem('recipes') || '[]');
-    const form       = document.getElementById('recipe-form');
-    const idInput    = document.getElementById('recipe-id');
-    const nameInput  = document.getElementById('recipe-name');
-    const catInput   = document.getElementById('recipe-category');
-    const ingInput   = document.getElementById('recipe-ingredients');
-    const instrInput = document.getElementById('recipe-instructions');
-    const photoInput = document.getElementById('recipe-photo');
-    const preview    = document.getElementById('photo-preview');
-    const saveBtn    = document.getElementById('save-btn');
-    const resetBtn   = document.getElementById('reset-btn');
-    const filterSel  = document.getElementById('category-filter');
-    const recipesEl  = document.getElementById('recipes');
-    const exportBtn  = document.getElementById('export-btn');
-    const importBtn  = document.getElementById('import-btn');
-    const fileInput  = document.getElementById('file-input');
-    const formTitle  = document.getElementById('form-title');
 
-    // render all recipes
+    // Elements
+    const form          = document.getElementById('recipe-form');
+    const idInput       = document.getElementById('recipe-id');
+    const nameInput     = document.getElementById('recipe-name');
+    const categoryInput = document.getElementById('recipe-category');
+    const ingredientsInput = document.getElementById('recipe-ingredients');
+    const instructionsInput = document.getElementById('recipe-instructions');
+    const photoInput    = document.getElementById('recipe-photo');
+    const preview       = document.getElementById('photo-preview');
+    const formTitle     = document.getElementById('form-title');
+    const filterSelect  = document.getElementById('category-filter');
+    const recipesEl     = document.getElementById('recipes');
+    const exportBtn     = document.getElementById('export-btn');
+    const importBtn     = document.getElementById('import-btn');
+    const fileInput     = document.getElementById('file-input');
+    const resetBtn      = document.getElementById('reset-btn');
+
+    // Utilities
+    function saveToStorage() {
+      localStorage.setItem('recipes', JSON.stringify(recipes));
+    }
+
     function renderRecipes() {
-      const category = filterSel.value;
+      const category = filterSelect.value;
       recipesEl.innerHTML = '';
       recipes
         .filter(r => category === 'All' || r.category === category)
-        .forEach(recipe => {
+        .forEach(r => {
           const card = document.createElement('div');
           card.className = 'recipe-card';
           card.innerHTML = `
-            <img src="${recipe.photo || 'https://via.placeholder.com/300x140?text=No+Photo'}" alt="${recipe.name}">
-            <div class="info">
-              <h3>${recipe.name}</h3>
-              <div class="category">${recipe.category}</div>
-              <p>${recipe.ingredients.split('\n').map(line => `• ${line}`).join('<br>')}</p>
+            <img src="${r.photo || 'https://via.placeholder.com/300x140?text=No+Photo'}" alt="${r.name}">
+            <div class="recipe-info">
+              <h3>${r.name}</h3>
+              <div class="category">${r.category}</div>
+              <div class="snippet">${r.ingredients.split('\n').map(i => '• ' + i).join('<br>')}</div>
             </div>
-            <div class="actions">
+            <div class="recipe-actions">
               <button class="edit-btn">Edit</button>
-              <button class="del-btn">Delete</button>
+              <button class="delete-btn">Delete</button>
             </div>`;
-          // edit
-          card.querySelector('.edit-btn').onclick = () => loadRecipe(recipe.id);
-          // delete
-          card.querySelector('.del-btn').onclick = () => {
+          card.querySelector('.edit-btn').onclick = () => loadRecipe(r.id);
+          card.querySelector('.delete-btn').onclick = () => {
             if (confirm('Delete this recipe?')) {
-              recipes = recipes.filter(r => r.id !== recipe.id);
-              saveAll(); renderRecipes();
+              recipes = recipes.filter(x => x.id !== r.id);
+              saveToStorage();
+              renderRecipes();
             }
           };
           recipesEl.append(card);
         });
     }
 
-    // save to localStorage
-    function saveAll() {
-      localStorage.setItem('recipes', JSON.stringify(recipes));
-    }
-
-    // load into form for edit
     function loadRecipe(id) {
       const r = recipes.find(x => x.id === id);
       if (!r) return;
-      idInput.value    = r.id;
-      nameInput.value  = r.name;
-      catInput.value   = r.category;
-      ingInput.value   = r.ingredients;
-      instrInput.value = r.instructions;
+      idInput.value = r.id;
+      nameInput.value = r.name;
+      categoryInput.value = r.category;
+      ingredientsInput.value = r.ingredients;
+      instructionsInput.value = r.instructions;
       preview.innerHTML = r.photo
-        ? `<img src="${r.photo}" alt="preview" style="max-width:100%;border-radius:var(--radius)">`
+        ? `<img src="${r.photo}" alt="Preview">`
         : '';
       formTitle.textContent = 'Edit Recipe';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // form reset
     resetBtn.onclick = () => {
-      idInput.value = '';
-      preview.innerHTML = '';
       formTitle.textContent = 'Add New Recipe';
+      preview.innerHTML = '';
+      idInput.value = '';
     };
 
-    // handle photo preview
     photoInput.onchange = () => {
       const file = photoInput.files[0];
       if (!file) { preview.innerHTML = ''; return; }
       const reader = new FileReader();
       reader.onload = e => {
-        preview.innerHTML = `<img src="${e.target.result}" alt="preview" style="max-width:100%;border-radius:var(--radius)">`;
+        preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
       };
       reader.readAsDataURL(file);
     };
 
-    // submit form
     form.onsubmit = e => {
       e.preventDefault();
-      const id   = idInput.value || Date.now().toString();
+      const id = idInput.value || Date.now().toString();
       const name = nameInput.value.trim();
-      const cat  = catInput.value;
-      const ing  = ingInput.value.trim();
-      const ins  = instrInput.value.trim();
-      // photo
+      const category = categoryInput.value;
+      const ingredients = ingredientsInput.value.trim();
+      const instructions = instructionsInput.value.trim();
+
+      function finalize(photoData) {
+        const recipe = { id, name, category, ingredients, instructions, photo: photoData };
+        const idx = recipes.findIndex(x => x.id === id);
+        if (idx >= 0) recipes[idx] = recipe;
+        else recipes.push(recipe);
+        saveToStorage();
+        form.reset();
+        resetBtn.click();
+        renderRecipes();
+      }
+
       if (photoInput.files[0]) {
         const reader = new FileReader();
-        reader.onload = evt => saveRecipe(id, name, cat, ing, ins, evt.target.result);
+        reader.onload = e => finalize(e.target.result);
         reader.readAsDataURL(photoInput.files[0]);
       } else {
-        const existing = recipes.find(r => r.id === id);
-        const photo    = existing ? existing.photo : '';
-        saveRecipe(id, name, cat, ing, ins, photo);
+        const existing = recipes.find(x => x.id === id);
+        finalize(existing ? existing.photo : '');
       }
     };
 
-    // add or update
-    function saveRecipe(id, name, cat, ing, ins, photo) {
-      const index = recipes.findIndex(r => r.id === id);
-      const obj   = { id, name, category: cat, ingredients: ing, instructions: ins, photo };
-      if (index >= 0) recipes[index] = obj;
-      else recipes.push(obj);
-      saveAll();
-      form.reset(); resetBtn.click();
-      renderRecipes();
-    }
+    filterSelect.onchange = renderRecipes;
 
-    // filter change
-    filterSel.onchange = renderRecipes;
-
-    // export JSON
     exportBtn.onclick = () => {
       const blob = new Blob([JSON.stringify(recipes, null, 2)], { type: 'application/json' });
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
       a.href = url; a.download = 'recipes.json'; a.click();
       URL.revokeObjectURL(url);
     };
 
-    // import JSON
     importBtn.onclick = () => fileInput.click();
     fileInput.onchange = e => {
-      const f = e.target.files[0];
-      if (!f) return;
+      const file = e.target.files[0];
+      if (!file) return;
       const reader = new FileReader();
       reader.onload = () => {
         try {
           const data = JSON.parse(reader.result);
           if (Array.isArray(data)) {
             recipes = data;
-            saveAll();
+            saveToStorage();
             renderRecipes();
-          } else throw 0;
+          } else {
+            alert('Invalid JSON format');
+          }
         } catch {
-          alert('Invalid JSON file.');
+          alert('Could not parse JSON');
         }
       };
-      reader.readAsText(f);
+      reader.readAsText(file);
     };
 
-    // initial render
+    // Initialize
     renderRecipes();
   </script>
 </body>
